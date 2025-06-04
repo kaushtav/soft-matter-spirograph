@@ -20,7 +20,7 @@ class SelfPropelledParticle {
         this.epsilon = epsilon;
         this.cutoff = 3;        // cutoff factor (in units of diameter); we’ll do d < 3s
         this.timeStep = timeStep;
-        this.noiseG = 0.1;      // rotational‐noise strength (√g) when useNoise = true
+        this.noiseG = 0.01;      // rotational‐noise strength (√g) when useNoise = true
     }
 
     /**
