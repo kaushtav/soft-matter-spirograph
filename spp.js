@@ -1,124 +1,112 @@
-// spp.js
+/// <reference path="./node_modules/@types/p5/global.d.ts" />
 
 class SelfPropelledParticle {
     /**
-     * @param {number} x     – initial x
-     * @param {number} y     – initial y
-     * @param {number} v     – constant speed magnitude
-     * @param {number} r     – radius for drawing
-     * @param {number} theta – initial orientation angle (optional)
+     * @param {number} x         – initial x position
+     * @param {number} y         – initial y position
+     * @param {number} speed     – self‐propulsion speed (units: px / unit time)
+     * @param {number} radius    – visual radius (px)
+     * @param {number} theta     – initial orientation angle (rad)
+     * @param {number} mobility  – mobility (m), converts force → velocity
+     * @param {number} epsilon   – repulsion strength (ε)
+     * @param {number} timeStep  – time step Δt (we keep it at 0.1)
      */
-    constructor(x, y, v = 1, r = 4, theta = null) {
+    constructor(x, y, speed, radius, theta, mobility, epsilon, timeStep) {
         this.pos = createVector(x, y);
-        this.speed = v;
-        this.r = r;
-
-        // If no initial angle provided, pick random in [0, 2π)
-        this.theta = theta !== null ? theta : random(0, TWO_PI);
+        this.speed = speed;
+        this.r = radius;        // helps define s = 2r in repulsion
+        this.theta = theta;
+        this.mobility = mobility;
+        this.epsilon = epsilon;
+        this.cutoff = 3;        // cutoff factor (in units of diameter); we’ll do d < 3s
+        this.timeStep = timeStep;
+        this.noiseG = 0.5;      // rotational‐noise strength (√g) when useNoise = true
     }
 
     /**
-     * Update this SPP’s orientation + position, given the AP.
-     * - Use Euler integration with Δt = 1 for simplicity.
-     * - Coupling constant K_F is taken from ap.strength.
-     *
-     * @param {AttractivePoint} ap
+     * Update orientation + position over one step Δt.
+     * – ap: the AttractivePoint
+     * – allParticles: array of all SPPs (used for repulsion if we uncomment it)
      */
-    update(ap) {
-        // 1) Get AP’s unit vector & bearing φ from this.pos
-        let { force, phi } = ap.attractVector(this.pos);
-        let K_F = ap.strength;
+    update(ap, allParticles) {
+        let dt = this.timeStep;
 
-        // 2) Update orientation θ via overdamped coupling:
-        //    dθ = K_F * sin(φ − θ)   (Euler: θ ← θ + Δt * K_F * sin(φ − θ))
-        let dtheta = K_F * sin(phi - this.theta);
-        this.theta += dtheta;
+        // 1) Compute total repulsive force:
+        let totalRep = createVector(0, 0);
+        let diameter = this.r * 2;
+        let cutoffDist = this.cutoff * diameter; // e.g. 3·s
 
-        // 3) Move forward at speed v in direction θ (Δt = 1 for simplicity)
-        let vx = this.speed * cos(this.theta);
-        let vy = this.speed * sin(this.theta);
-        this.pos.x += vx;
-        this.pos.y += vy;
-
-        // 4) Optional: bounce off bottom edge (similar to the paper’s excluded‐volume bounce)
-        if (this.pos.y > height - this.r) {
-            this.pos.y = height - this.r;
-            // reflect vertical component of instantaneous “velocity”
-            // so that it bounces:
-            this.theta = -this.theta;
-            // ensure θ is in [–PI, PI):
-            this.theta = atan2(sin(this.theta), cos(this.theta));
+        // --- 1a) Pairwise SPP ↔ SPP repulsion (kept commented) ---
+        /*
+        for (let other of allParticles) {
+          if (other === this) continue;
+          let rij = p5.Vector.sub(this.pos, other.pos);
+          let d = rij.mag();
+          if (d > 0 && d < cutoffDist) {
+            let s12 = pow(diameter, 12);
+            let d13 = pow(d, 13);
+            let rawMag = 12 * this.epsilon * (s12 / d13);
+            let fret = rij.copy().normalize().mult(rawMag);
+            totalRep.add(fret);
+          }
         }
+        */
+
+        // --- 1b) Excluded-volume repulsion SPP ↔ AP ---
+        let rap = p5.Vector.sub(this.pos, ap.pos);
+        let dap = rap.mag();
+        if (dap > 0 && dap < cutoffDist) {
+            let s12 = pow(diameter, 12);
+            let d13 = pow(dap, 13);
+            let rawMagAP = 12 * this.epsilon * (s12 / d13);
+            let fretAP = rap.copy().normalize().mult(rawMagAP);
+            totalRep.add(fretAP);
+        }
+
+        // 2) Orientation update: “align to AP” + optional rotational noise
+        let rawVec = p5.Vector.sub(ap.pos, this.pos);
+        let phi = rawVec.heading();           // bearing from SPP → AP
+
+        // Deterministic alignment term: dθ_det = K_F · sin(φ − θ)
+        let dtheta = ap.strength * sin(phi - this.theta);
+
+        // If noise is enabled, add rotational noise √g·Z_i:
+        if (useNoise) {
+            let dthetaNoise = sqrt(this.noiseG) * randomGaussian();
+            dtheta += dthetaNoise;
+        }
+
+        // Integrate θ over dt:
+        this.theta += dtheta * dt;
+
+        // 3) Compute net velocity = v_self + v_rep
+        let vSelf = createVector(
+            this.speed * cos(this.theta),
+            this.speed * sin(this.theta)
+        );
+        let vRep = totalRep.mult(this.mobility);
+        let netVel = p5.Vector.add(vSelf, vRep);
+
+        // 4) Position update:
+        this.pos.add(netVel.mult(dt));
+
+        // 5) Constrain inside canvas (simple reflect):
+        this.pos.x = constrain(this.pos.x, 0, width);
+        this.pos.y = constrain(this.pos.y, 0, height);
     }
 
-    update(ap) {
-        let { force, phi } = ap.attractVector(this.pos);
-        let K_F = ap.strength;
-
-        // Deterministic alignment:
-        let dtheta = K_F * sin(phi - this.theta);
-
-        // Rotational noise (zero‐mean Gaussian):
-        let noiseStrength = 0.01;
-        let randomKick = noiseStrength * randomGaussian();
-
-        this.theta += dtheta + randomKick;
-        // wrap θ into [–PI, PI):
-        this.theta = atan2(sin(this.theta), cos(this.theta));
-
-        // Move forward:
-        let vx = this.speed * cos(this.theta);
-        let vy = this.speed * sin(this.theta);
-        this.pos.x += vx;
-        this.pos.y += vy;
-
-        // Bounce off bottom:
-        if (this.pos.y > height - this.r) {
-            this.pos.y = height - this.r;
-            this.theta = -this.theta;
-            this.theta = atan2(sin(this.theta), cos(this.theta));
-        }
-    }
-
-    // update(ap) {
-    //     let { force, phi } = ap.attractVector(this.pos);
-    //     let K_F = ap.strength;
-    //
-    //     // Deterministic alignment:
-    //     let dtheta = K_F * sin(phi - this.theta);
-    //
-    //     // Rotational noise (zero‐mean Gaussian):
-    //     let noiseStrength = 0.01;
-    //     let randomKick = noiseStrength * randomGaussian();
-    //
-    //     this.theta += dtheta + randomKick;
-    //     // wrap θ into [–PI, PI):
-    //     this.theta = atan2(sin(this.theta), cos(this.theta));
-    //
-    //     // Move forward:
-    //     let vx = this.speed * cos(this.theta);
-    //     let vy = this.speed * sin(this.theta);
-    //     this.pos.x += vx;
-    //     this.pos.y += vy;
-    //
-    //     // Bounce off bottom:
-    //     if (this.pos.y > height - this.r) {
-    //         this.pos.y = height - this.r;
-    //         this.theta = -this.theta;
-    //         this.theta = atan2(sin(this.theta), cos(this.theta));
-    //     }
-    // }
-
-
+    /**
+     * Draw this particle at its current position and heading.
+     */
     show() {
         noStroke();
         fill(60, 180, 220);
         ellipse(this.pos.x, this.pos.y, this.r * 2);
 
-        // (Optional) draw a small line indicating heading θ:
+        // (Optional) heading indicator
         push();
         stroke(255);
-        strokeWeight(2);
+        strokeWeight(0.5);
         let dx = this.r * cos(this.theta);
         let dy = this.r * sin(this.theta);
         line(this.pos.x, this.pos.y, this.pos.x + dx, this.pos.y + dy);
