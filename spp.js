@@ -20,7 +20,7 @@ class SelfPropelledParticle {
         this.epsilon = epsilon;
         this.cutoff = 3;        // cutoff factor (in units of diameter); we’ll do d < 3s
         this.timeStep = timeStep;
-        this.noiseG = 0.01;      // rotational‐noise strength (√g) when useNoise = true
+        this.noiseG = 0.05;      // rotational‐noise strength (√g) when useNoise = true
     }
 
     /**
@@ -37,12 +37,12 @@ class SelfPropelledParticle {
         let cutoffDist = this.cutoff * diameter; // e.g. 3·s
 
         // --- 1a) Pairwise SPP ↔ SPP repulsion (kept commented) ---
-        /*
+
         for (let other of allParticles) {
           if (other === this) continue;
           let rij = p5.Vector.sub(this.pos, other.pos);
           let d = rij.mag();
-          if (d > 0 && d < cutoffDist) {
+          if (d > 0) {
             let s12 = pow(diameter, 12);
             let d13 = pow(d, 13);
             let rawMag = 12 * this.epsilon * (s12 / d13);
@@ -50,12 +50,12 @@ class SelfPropelledParticle {
             totalRep.add(fret);
           }
         }
-        */
+
 
         // --- 1b) Excluded-volume repulsion SPP ↔ AP ---
         let rap = p5.Vector.sub(this.pos, ap.pos);
         let dap = rap.mag();
-        if (dap > 0 && dap < cutoffDist) {
+        if (dap > 0 ) {
             let s12 = pow(diameter, 12);
             let d13 = pow(dap, 13);
             let rawMagAP = 12 * this.epsilon * (s12 / d13);

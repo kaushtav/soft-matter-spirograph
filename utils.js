@@ -12,32 +12,39 @@ let toggleTrailsButton,
 function createToolbar() {
     // ---- (a) K_F slider + label ----
     labelKF = createDiv('K_F = 0.10');
-    labelKF.position(10, 5);
+    labelKF.position(10, 25);
     labelKF.style('color', 'white');
+    labelKF.style('padding', '4px 8px');
     sliderKF = createSlider(0.01, 1.5, initialKF, 0.01);
-    sliderKF.position(60, 25);
+    sliderKF.style('padding', '4px 8px');
+    sliderKF.position(100, 25);
     sliderKF.style('width', '100px');
 
     // ---- (b) Speed slider + label ----
     labelSpeed = createDiv('Speed = 1.0');
-    labelSpeed.position(200, 5);
+    labelSpeed.position(10, 45);
     labelSpeed.style('color', 'white');
-    sliderSpeed = createSlider(0.1, 5, initialSpeed * timeStep, 0.1);
-    sliderSpeed.position(260, 25);
+    labelSpeed.style('padding', '4px 8px');
+    sliderSpeed = createSlider(0.1, 2, initialSpeed * timeStep, 0.1);
+    sliderSpeed.position(100, 45);
     sliderSpeed.style('width', '100px');
+    sliderSpeed.style('padding', '4px 8px');
 
     // ---- (c) Radius slider + label ----
     labelRadius = createDiv('Radius = 6');
-    labelRadius.position(380, 5);
+    labelRadius.position(10, 65);
     labelRadius.style('color', 'white');
-    sliderRadius = createSlider(0.1, 50, initialRadius, 0.1);
-    sliderRadius.position(450, 25);
+    labelRadius.style('padding', '4px 8px');
+    sliderRadius = createSlider(1, 10, initialRadius, 0.1);
+    sliderRadius.position(100, 65);
     sliderRadius.style('width', '100px');
+    sliderRadius.style('padding', '4px 8px');
 
     // ---- (d) “Hide Trails” toggle button ----
-    toggleTrailsButton = createButton('Turn Trails On');
-    toggleTrailsButton.position(650, 15);
+    toggleTrailsButton = createButton(showTrails?'Turn Trails Off':'Turn Trails On');
+    toggleTrailsButton.position(250, 30);
     toggleTrailsButton.style('padding', '4px 8px');
+    toggleTrailsButton.style('width', '120px');
     toggleTrailsButton.style('color', 'white');
     toggleTrailsButton.style('background-color', '#333');
     toggleTrailsButton.mousePressed(() => {
@@ -54,8 +61,9 @@ function createToolbar() {
 
     // ---- (e) “Noise On/Off” toggle button ----
     toggleNoiseButton = createButton('Turn Noise On');
-    toggleNoiseButton.position(760, 15);
-    toggleNoiseButton.style('padding', '4px 8px');
+    toggleNoiseButton.position(250, 60);
+    toggleNoiseButton.style('padding', '4px 7px');
+    toggleNoiseButton.style('width', '120px');
     toggleNoiseButton.style('color', 'white');
     toggleNoiseButton.style('background-color', '#333');
     toggleNoiseButton.mousePressed(() => {
@@ -65,14 +73,17 @@ function createToolbar() {
 
     // ---- (f) Input + “Set N” for changing particle count ----
     inputN = createInput(String(N), 'number');
-    inputN.position(880, 25);
+    inputN.position(400, 45);
     inputN.style('width', '50px');
+    inputN.style('height', '20px');
+    inputN.style('padding', '2px 8px');
     inputN.attribute('min', '1');
 
-    setNButton = createButton('Set N');
-    setNButton.position(940, 25);
-    setNButton.style('padding', '4px 8px');
+    setNButton = createButton('Set count');
+    setNButton.position(470, 45);
     setNButton.style('color', 'white');
+    setNButton.style('padding', '4px 8px');
+    setNButton.style('height', '30px');
     setNButton.style('background-color', '#333');
     setNButton.mousePressed(() => {
         let newVal = parseInt(inputN.value());
@@ -112,8 +123,8 @@ function spawnSPPs() {
     for (let i = 0; i < N; i++) {
         let x, y, d;
         do {
-            x = random(width);
-            y = random(height);
+            x = random(width/4,0.75*width);
+            y = random(height/4,0.75*height);
             d = dist(x, y, ap.pos.x, ap.pos.y);
         } while (d < spawnBuffer);
 

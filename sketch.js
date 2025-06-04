@@ -5,25 +5,25 @@ let spps = [];
 let trails = [];
 let windowWidth = 1200,
     windowHeight = 800;
-let zoomFactor = 1.0;
+let zoomFactor = 3.0;
 
 // Number of particles
-let N = 10;
+let N = 6;
 
 // Initial (default) parameter values
-let initialKF = 0.2;
-let initialSpeed = 10;
+let initialKF = 0.75;
+let initialSpeed = 7;
 let timeStep = 0.1;    // Δt = 0.1 (paper uses 0.001, but we keep 0.1 per your request)
-let initialRadius = 5;
+let initialRadius = 4;
 let mobility = 0.25;   // fixed
-let epsilon = 2;       // fixed
+let epsilon = 50;       // fixed
 let trailLength = Math.max(100, 5000 / N);
 
 // Sliders + Labels + Buttons (declared in utils.js)
 
 
 // Toggle flags
-let showTrails = false;
+let showTrails = true;
 let useNoise = false;
 
 function setup() {
