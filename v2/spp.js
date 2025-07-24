@@ -5,17 +5,19 @@ class SelfPropelledParticle {
      * @param {number} x         – initial x position
      * @param {number} y         – initial y position
      * @param {number} speed     – self‐propulsion speed (units: px / unit time)
+     * @param strength           - spp<->spp strength
      * @param {number} radius    – visual radius (px)
      * @param {number} theta     – initial orientation angle (rad)
      * @param {number} mobility  – mobility (m), converts force → velocity
      * @param {number} epsilon   – repulsion strength (ε)
      * @param {number} timeStep  – time step Δt (we keep it at 0.1)
      */
-    constructor(x, y, speed, radius, theta, mobility, epsilon, timeStep) {
+    constructor(x, y, speed,strength, radius, theta, mobility, epsilon, timeStep) {
         this.pos = createVector(x, y);
         this.speed = speed;
-        this.r = radius;        // helps define s = 2r in repulsion
-        this.theta = theta;
+        this.r = radius;
+        this.strength = strength;
+        this.theta = theta;// helps define s = 2r in repulsion
         this.mobility = mobility;
         this.epsilon = epsilon;
         this.cutoff = 3;        // cutoff factor (in units of diameter); we’ll do d < 3s
@@ -42,37 +44,49 @@ class SelfPropelledParticle {
           if (other === this) continue;
           let rij = p5.Vector.sub(this.pos, other.pos);
           let d = rij.mag();
-          if (d > 0) {
-            let s12 = pow(diameter, 12);
-            let d13 = pow(d, 13);
+          if (d > 0  && d < this.cutoff * this.r * 2)  {
+            let s12 = Math.pow(diameter, 12);
+            let d13 = Math.pow(d, 13);
             let rawMag = 12 * this.epsilon * (s12 / d13);
             let fret = rij.copy().normalize().mult(rawMag);
             totalRep.add(fret);
+
           }
         }
 
 
         // --- 1b) Excluded-volume repulsion SPP ↔ AP ---
-        let rap = p5.Vector.sub(this.pos, ap.pos);
+        let rap = p5.Vector.sub(this.pos, origin);
         let dap = rap.mag();
-        if (dap > 0 ) {
-            let s12 = pow(diameter, 12);
-            let d13 = pow(dap, 13);
+        if (dap > 0  && dap < this.cutoff * this.r * 2) {
+            let s12 = Math.pow(diameter, 12);
+            let d13 = Math.pow(dap, 13);
             let rawMagAP = 12 * this.epsilon * (s12 / d13);
             let fretAP = rap.copy().normalize().mult(rawMagAP);
             totalRep.add(fretAP);
         }
 
         // 2) Orientation update: “align to AP” + optional rotational noise
-        let rawVec = p5.Vector.sub(ap.pos, this.pos);
+        let rawVec = p5.Vector.sub(origin, this.pos);
         let phi = rawVec.heading();           // bearing from SPP → AP
 
         // Deterministic alignment term: dθ_det = K_F · sin(φ − θ)
-        let dtheta = ap.strength * sin(phi - this.theta);
+        let dtheta = ap.strength * Math.sin(phi - this.theta);
+        for(let other of allParticles){
+            if (this === other) continue;
+
+            let rij = p5.Vector.sub(other.pos, this.pos);
+            let d = rij.mag();
+            if (d > 0 && d < this.cutoff * this.r * 2) {
+                // 2) Alignment
+                let phi_ij = rij.heading();
+                dtheta += this.strength * Math.sin(phi_ij - this.theta);  // SPP-SPP alignment term
+            }
+        }
 
         // If noise is enabled, add rotational noise √g·Z_i:
         if (useNoise) {
-            let dthetaNoise = sqrt(this.noiseG) * randomGaussian();
+            let dthetaNoise = Math.sqrt(this.noiseG) * Math.randomGaussian();
             dtheta += dthetaNoise;
         }
 
@@ -81,8 +95,8 @@ class SelfPropelledParticle {
 
         // 3) Compute net velocity = v_self + v_rep
         let vSelf = createVector(
-            this.speed * cos(this.theta),
-            this.speed * sin(this.theta)
+            this.speed * Math.cos(this.theta),
+            this.speed *  Math.sin(this.theta)
         );
         let vRep = totalRep.mult(this.mobility);
         let netVel = p5.Vector.add(vSelf, vRep);
@@ -107,8 +121,8 @@ class SelfPropelledParticle {
         push();
         stroke(255);
         strokeWeight(0.5);
-        let dx = this.r * cos(this.theta);
-        let dy = this.r * sin(this.theta);
+        let dx = this.r *  Math.cos(this.theta);
+        let dy = this.r * Math. sin(this.theta);
         line(this.pos.x, this.pos.y, this.pos.x + dx, this.pos.y + dy);
         pop();
     }

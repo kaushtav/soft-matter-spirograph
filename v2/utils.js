@@ -147,8 +147,9 @@ function spawnSPPs() {
             new SelfPropelledParticle(
                 x,
                 y,
+                initialKFSPP,
                 initialSpeed,    // overwritten each frame in draw()
-                initialRadius,   // overwritten each frame in draw()
+                initialRadius, // overwritten each frame in draw()
                 theta0,
                 mobility,        // constant, no slider
                 epsilon,         // constant=2, no slider

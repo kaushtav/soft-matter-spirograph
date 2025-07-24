@@ -5,6 +5,7 @@ let trails = [];
 let windowWidth = 1200,
     windowHeight = 800;
 let zoomFactor = 3.0;
+let origin;
 
 // Number of particles
 let N = 10;
@@ -28,6 +29,7 @@ let useNoise = false;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
+    origin = createVector(windowWidth   /2,windowHeight/2);
 
     // 1) Create the single Attractive Point (AP) at canvas center:
     ap = new AttractivePoint(
@@ -54,7 +56,7 @@ function draw() {
     let newRadius = sliderRadius.value();
 
     labelKF.html(`K_F = ${newKF.toFixed(2)}`);
-    labelKF_SPP.html(`K_F = ${newKfSPP.toFixed(2)}`);
+    labelKF_SPP.html(`K_F_SPP = ${newKfSPP.toFixed(2)}`);
     labelSpeed.html(`Speed = ${(newSpeed * timeStep).toFixed(1)}`);
     labelRadius.html(`Radius = ${newRadius}`);
 
