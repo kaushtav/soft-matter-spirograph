@@ -2,48 +2,46 @@
 
 class AttractivePoint {
     /**
-     * @param {number} x        – x‐coordinate of the AP
-     * @param {number} y        – y‐coordinate of the AP
-     * @param {number} strength – coupling strength (K_F in the paper)
-     * @param radius
+     * Creates an Attractive Point (AP) that exerts a coupling force on particles.
+     *
+     * @param {number} x        – Initial x-coordinate
+     * @param {number} y        – Initial y-coordinate
+     * @param {number} strength – Coupling strength (K_F in the paper)
+     * @param {number} radius   – Radius for visual representation
      */
     constructor(x, y, strength, radius) {
-        this.pos = createVector(x,y);
-        this.strength = strength;
-        this.r = radius; // for drawing
-        this.vel = createVector(0, 0);
-        this.mass = 1000;// 💡 new
+        this.pos = createVector(x, y);            // Position vector
+        this.strength = strength;                 // Attraction strength
+        this.r = radius;                          // Radius for drawing
+        this.vel = createVector(0, 0);            // Velocity vector
+        this.mass = 10000;                        // Mass (affects response to forces)
+        this.totalForce = createVector(0, 0);     // Net force accumulator
     }
-    applyForcesFrom(spps, epsilon, cutoff, timeStep) {
-        let totalForce = createVector(0, 0);
-        let diameter = this.r * 2;
-        let cutoffDist = cutoff * diameter;
 
-        for (let p of spps) {
-            let rij = p5.Vector.sub(this.pos, p.pos);
-            let d = rij.mag();
-            if (d > 0 && d < cutoffDist) {
-                let s12 = pow(diameter, 12);
-                let d13 = pow(d, 13);
-                let mag = 12 * epsilon * (s12 / d13);
-                let force = rij.copy().normalize().mult(mag);
-                totalForce.add(force);
-            }
-        }
+    /**
+     * Applies the net force to update velocity and position (Euler integration)
+     *
+     * @param {number} dt – Time step
+     */
+    updateFromForce(dt) {
+        let acc = this.totalForce.copy().div(this.mass);    // F = ma → a = F/m
+        this.vel.add(acc.mult(dt));                          // v += a·dt
+        this.pos.add(this.vel.copy().mult(dt));              // x += v·dt
 
-        // Basic motion update
-        let accel = totalForce.div(this.mass);  // mass = 1, so it's just force
-        this.vel.add(accel.mult(timeStep));
-        this.pos.add(this.vel.copy().mult(timeStep));
-
-        // Optional: constrain within canvas
+        // Keep the AP within canvas bounds
         this.pos.x = constrain(this.pos.x, 0, width);
         this.pos.y = constrain(this.pos.y, 0, height);
+
+        // Debug logging (optional)
+        console.log(acc.x, this.vel.x, this.pos.x);
     }
 
+    /**
+     * Renders the AP as a red circle
+     */
     show() {
         noStroke();
-        fill(255, 60, 60);
+        fill(255, 60, 60);   // Red
         ellipse(this.pos.x, this.pos.y, this.r * 2);
     }
 }

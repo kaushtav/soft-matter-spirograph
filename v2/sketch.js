@@ -1,37 +1,60 @@
 /// <reference path="./node_modules/@types/p5/global.d.ts" />
-let ap;
-let spps = [];
-let trails = [];
-let windowWidth = 1200,
-    windowHeight = 800;
+
+// ----------------------------------------
+// Global Variables & Simulation Constants
+// ----------------------------------------
+let ap;                         // Attractive Point
+let spps = [];                  // Self-propelled particles
+let trails = [];                // Particle trails
+
+let windowWidth = 1200;
+let windowHeight = 800;
 let zoomFactor = 3.0;
-let origin;
 
-// Number of particles
-let N = 3;
-
-// Initial (default) parameter values
-let initialKF = 0.5;
-let initialKFSPP = 0.5;
-let initialSpeed = 7;
-let timeStep = 0.1;    // Δt = 0.1 (paper uses 0.001, but we keep 0.1 per your request)
+// Particle configuration
+let N = 1;                      // Number of SPPs
+let initialKF = 0.5;            // Attraction strength of AP
+let initialKFSPP = 0.5;         // Attraction strength towards AP per SPP
+let initialSpeed = 4;
+let timeStep = 0.1;             // Simulation timestep
 let initialRadius = 4;
-let mobility = 0.25;   // fixed
-let epsilon = 50;       // fixed
-let trailLength = Math.max(100, 5000 / N);
+let mobility = 0.25;            // Mobility coefficient (fixed)
+let epsilon = 1;                // Repulsion coefficient (fixed)
+let trailLength = Math.max(100, 5000 / N); // Trail buffer size
 
-// Sliders + Labels + Buttons (declared in utils.js)
-
-
-// Toggle flags
+// UI flags
 let showTrails = true;
 let useNoise = false;
 
+// ----------------------------------------
+// Utility: Log total momentum of system
+// ----------------------------------------
+function logTotalMomentum() {
+    let totalMomentum = createVector(0, 0);
+
+    for (let p of spps) {
+        let vel = createVector(
+            p.speed * Math.cos(p.theta),
+            p.speed * Math.sin(p.theta)
+        );
+        totalMomentum.add(vel);
+    }
+
+    if (ap.vel) {
+        totalMomentum.add(ap.vel.copy());
+    }
+
+    console.log("Total linear momentum (magnitude):", totalMomentum.mag().toFixed(4));
+    // console.log("Vector:", totalMomentum);
+}
+
+// ----------------------------------------
+// p5.js Setup
+// ----------------------------------------
 function setup() {
     createCanvas(windowWidth, windowHeight);
-    origin = createVector(windowWidth   /2,windowHeight/2);
 
-    // 1) Create the single Attractive Point (AP) at canvas center:
+    // Create the single Attractive Point at canvas center
     ap = new AttractivePoint(
         windowWidth / 2,
         windowHeight / 2,
@@ -39,20 +62,20 @@ function setup() {
         initialRadius
     );
 
-    // 2) Build the toolbar (sliders + toggle buttons + input field)
-    createToolbar();
-
-    // 3) Spawn the initial batch of N SPPs
-    spawnSPPs();
+    createToolbar();   // Load sliders & buttons from utils.js
+    spawnSPPs();       // Generate initial SPPs
 }
 
+// ----------------------------------------
+// p5.js Draw Loop
+// ----------------------------------------
 function draw() {
     background(20);
 
-    // --- Read slider values & update labels + AP parameters ---
+    // --- Step 0: Read slider values and update AP/SPP parameters ---
     let newKF = sliderKF.value();
     let newKfSPP = sliderKF_SPP.value();
-    let newSpeed = sliderSpeed.value() / timeStep;  // slider holds speed·dt
+    let newSpeed = sliderSpeed.value() / timeStep;
     let newRadius = sliderRadius.value();
 
     labelKF.html(`Kf = ${newKF.toFixed(2)}`);
@@ -63,44 +86,91 @@ function draw() {
     ap.strength = newKF;
     ap.r = newRadius;
 
-    // --- Zoom‐wrapped drawing ---
     push();
     translate(width / 2, height / 2);
     scale(zoomFactor);
     translate(-width / 2, -height / 2);
 
-    // Draw the AP (red dot)
-    ap.show();
+    ap.show();  // Draw Attractive Point
 
-    // Update & draw each SPP
+    // Step 1: Update each particle with new slider params
     for (let i = 0; i < N; i++) {
         let p = spps[i];
         p.strength = newKfSPP;
-
-        // Overwrite each SPP’s per‐frame parameters:
         p.speed = newSpeed;
         p.r = newRadius;
         p.mobility = mobility;
         p.epsilon = epsilon;
+    }
 
-        p.update(ap, spps);  // orientation + position update
+    // Step 2: Clear all forces
+    for (let p of spps) p.totalForce = createVector(0, 0);
+    ap.totalForce = createVector(0, 0);
+
+    // Step 3: SPP–SPP Repulsion (Symmetric Newton's Third Law)
+    for (let i = 0; i < N; i++) {
+        for (let j = i + 1; j < N; j++) {
+            if (i === j) continue;
+            let pi = spps[i];
+            let pj = spps[j];
+            let rij = p5.Vector.sub(pi.pos, pj.pos);
+            let d = rij.mag();
+
+            if (d > 0 && d < 6 * pi.r) {
+                let s12 = Math.pow(2 * pi.r, 12);
+                let d13 = Math.pow(d, 13);
+                let force = rij.copy().normalize().mult(epsilon * (s12 / max(d13, 2 * pi.r)));
+
+                pi.totalForce.add(force);
+                pj.totalForce.sub(force);
+            }
+        }
+    }
+
+    // Step 4: AP–SPP Mutual Repulsion
+    for (let p of spps) {
+        let rij = p5.Vector.sub(p.pos, ap.pos);
+        let d = rij.mag();
+
+        if (d < 6 * ap.r) {
+            let s12 = pow(ap.r * 2, 12);
+            let d13 = pow(d, 13);
+            let force = rij.copy().normalize().mult(epsilon * (s12 / d13));
+
+            p.totalForce.add(force);
+            ap.totalForce.sub(force);
+        }
+    }
+
+    // Step 5: Update Orientation (alignment + noise)
+    for (let p of spps) {
+        p.updateOrientation(ap, spps);
+    }
+
+    // Step 6: Apply movement from forces
+    for (let p of spps) {
+        p.updateFromForce();  // includes v_self + v_repulsion
+    }
+    ap.updateFromForce(timeStep);  // Only v_repulsion
+
+    // Step 7: Render all SPPs and trails
+    for (let i = 0; i < N; i++) {
+        let p = spps[i];
         showParticleTrails(showTrails, trails, i, p);
         noStroke();
         p.show();
     }
 
-    ap.applyForcesFrom(spps, epsilon, ap.cutoff ?? 3, timeStep);
-
     pop();
-
-    // Note: Sliders, input box, and toggle buttons are not scaled.
 }
 
+// ----------------------------------------
+// p5.js Resize and Zoom Events
+// ----------------------------------------
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
 }
 
-// Mouse wheel → adjust zoomFactor
 function mouseWheel(event) {
     let sensitivity = 0.001;
     zoomFactor *= (1 - event.delta * sensitivity);

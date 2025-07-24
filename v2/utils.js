@@ -1,153 +1,142 @@
-let sliderKF,
-    sliderSpeed,
-    sliderRadius,
-    sliderKF_SPP;
-let labelKF,
-    labelSpeed,
-    labelRadius,
-    labelKF_SPP;
-let toggleTrailsButton,
-    toggleNoiseButton,
-    inputN,
-    setNButton;
+/// <reference path="./node_modules/@types/p5/global.d.ts" />
 
+// -------------------------------
+// UI Controls: Sliders & Buttons
+// -------------------------------
+let sliderKF, sliderSpeed, sliderRadius, sliderKF_SPP;
+let labelKF, labelSpeed, labelRadius, labelKF_SPP;
+let toggleTrailsButton, toggleNoiseButton;
+let inputN, setNButton, setRButton;
+
+/**
+ * Creates the toolbar for UI controls:
+ * - Sliders for K_F, K_F (SPP), Speed, Radius
+ * - Toggle buttons for trails and noise
+ * - Input to set particle count
+ */
 function createToolbar() {
-    // ---- (a) K_F slider + label ----
+    // ---- (a) Slider: K_F (Attractive Point) ----
     labelKF = createDiv('K_F = 0.10');
-    labelKF.position(10, 25);
-    labelKF.style('color', 'white');
-    labelKF.style('padding', '4px 8px');
+    labelKF.position(10, 25).style('color', 'white').style('padding', '4px 8px');
     sliderKF = createSlider(0.01, 1.5, initialKF, 0.01);
-    sliderKF.style('padding', '4px 8px');
-    sliderKF.position(110, 25);
-    sliderKF.style('width', '100px');
+    sliderKF.position(110, 25).style('width', '100px').style('padding', '4px 8px');
 
+    // ---- (b) Slider: K_F (SPP–SPP coupling) ----
     labelKF_SPP = createDiv('K_F (SPP-SPP) = 0.10');
-    labelKF_SPP.position(10, 45);
-    labelKF_SPP.style('color', 'white');
-    labelKF_SPP.style('padding', '4px 8px');
+    labelKF_SPP.position(10, 45).style('color', 'white').style('padding', '4px 8px');
     sliderKF_SPP = createSlider(0.01, 1.5, initialKFSPP, 0.01);
-    sliderKF_SPP.style('padding', '4px 8px');
-    sliderKF_SPP.position(110, 45);
-    sliderKF_SPP.style('width', '100px');
+    sliderKF_SPP.position(110, 45).style('width', '100px').style('padding', '4px 8px');
 
-
-
-
-    // ---- (b) Speed slider + label ----
+    // ---- (c) Slider: Speed ----
     labelSpeed = createDiv('Speed = 1.0');
-    labelSpeed.position(10, 65);
-    labelSpeed.style('color', 'white');
-    labelSpeed.style('padding', '4px 8px');
+    labelSpeed.position(10, 65).style('color', 'white').style('padding', '4px 8px');
     sliderSpeed = createSlider(0.1, 2, initialSpeed * timeStep, 0.1);
-    sliderSpeed.position(110, 65);
-    sliderSpeed.style('width', '100px');
-    sliderSpeed.style('padding', '4px 8px');
+    sliderSpeed.position(110, 65).style('width', '100px').style('padding', '4px 8px');
 
-    // ---- (c) Radius slider + label ----
+    // ---- (d) Slider: Radius ----
     labelRadius = createDiv('Radius = 6');
-    labelRadius.position(10, 85);
-    labelRadius.style('color', 'white');
-    labelRadius.style('padding', '4px 8px');
+    labelRadius.position(10, 85).style('color', 'white').style('padding', '4px 8px');
     sliderRadius = createSlider(1, 10, initialRadius, 0.1);
-    sliderRadius.position(110, 85);
-    sliderRadius.style('width', '100px');
-    sliderRadius.style('padding', '4px 8px');
+    sliderRadius.position(110, 85).style('width', '100px').style('padding', '4px 8px');
 
-    // ---- (d) “Hide Trails” toggle button ----
-    toggleTrailsButton = createButton(showTrails?'Turn Trails Off':'Turn Trails On');
-    toggleTrailsButton.position(250, 30);
-    toggleTrailsButton.style('padding', '4px 8px');
-    toggleTrailsButton.style('width', '120px');
-    toggleTrailsButton.style('color', 'white');
-    toggleTrailsButton.style('background-color', '#333');
-    toggleTrailsButton.mousePressed(() => {
-        showTrails = !showTrails;
-        if (!showTrails) {
-            for (let i = 0; i < N; i++) {
-                trails[i] = [];
+    // ---- (e) Button: Toggle Trails ----
+    toggleTrailsButton = createButton(showTrails ? 'Turn Trails Off' : 'Turn Trails On');
+    toggleTrailsButton.position(250, 30)
+        .style('width', '120px')
+        .style('padding', '4px 8px')
+        .style('color', 'white')
+        .style('background-color', '#333')
+        .mousePressed(() => {
+            showTrails = !showTrails;
+            if (!showTrails) {
+                for (let i = 0; i < N; i++) trails[i] = [];
+                toggleTrailsButton.html('Turn Trails On');
+            } else {
+                toggleTrailsButton.html('Turn Trails Off');
             }
-            toggleTrailsButton.html('Turn Trails On');
-        } else {
-            toggleTrailsButton.html('Turn Trails Off');
-        }
-    });
+        });
 
-    // ---- (e) “Noise On/Off” toggle button ----
+    // ---- (f) Button: Toggle Noise ----
     toggleNoiseButton = createButton('Turn Noise On');
-    toggleNoiseButton.position(250, 60);
-    toggleNoiseButton.style('padding', '4px 7px');
-    toggleNoiseButton.style('width', '120px');
-    toggleNoiseButton.style('color', 'white');
-    toggleNoiseButton.style('background-color', '#333');
-    toggleNoiseButton.mousePressed(() => {
-        useNoise = !useNoise;
-        toggleNoiseButton.html(useNoise ? 'Turn Noise Off' : 'Turn Noise On');
-    });
+    toggleNoiseButton.position(250, 60)
+        .style('width', '120px')
+        .style('padding', '4px 7px')
+        .style('color', 'white')
+        .style('background-color', '#333')
+        .mousePressed(() => {
+            useNoise = !useNoise;
+            toggleNoiseButton.html(useNoise ? 'Turn Noise Off' : 'Turn Noise On');
+        });
 
-    // ---- (f) Input + “Set N” for changing particle count ----
+    // ---- (g) Input: Set Number of SPPs ----
     inputN = createInput(String(N), 'number');
-    inputN.position(400, 30);
-    inputN.style('width', '50px');
-    inputN.style('height', '20px');
-    inputN.style('padding', '2px 8px');
-    inputN.attribute('min', '1');
+    inputN.position(400, 30)
+        .style('width', '50px')
+        .style('height', '20px')
+        .style('padding', '2px 8px')
+        .attribute('min', '1');
 
+    // ---- (h) Button: Apply N ----
     setNButton = createButton('Set count');
-    setNButton.position(470, 30);
-    setNButton.style('color', 'white');
-    setNButton.style('padding', '4px 8px');
-    setNButton.style('height', '30px');
-    setNButton.style('width', '100px');
-    setNButton.style('background-color', '#333');
-    setNButton.mousePressed(() => {
-        let newVal = parseInt(inputN.value());
-        if (!isNaN(newVal) && newVal > 0) {
-            N = newVal;
-            // Clear existing particles & trails
-            spps = [];
-            trails = [];
-            spawnSPPs();
-        }
-    });
+    setNButton.position(470, 30)
+        .style('color', 'white')
+        .style('width', '100px')
+        .style('height', '30px')
+        .style('padding', '4px 8px')
+        .style('background-color', '#333')
+        .mousePressed(() => {
+            let newVal = parseInt(inputN.value());
+            if (!isNaN(newVal) && newVal > 0) {
+                N = newVal;
+                spps = [];
+                trails = [];
+                spawnSPPs();
+            }
+        });
 
-
+    // ---- (i) Button: Reset Simulation ----
     setRButton = createButton('Reset');
-    setRButton.position(470, 60);
-    setRButton.style('color', 'white');
-    setRButton.style('padding', '4px 8px');
-    setRButton.style('height', '30px');
-    setRButton.style('width', '100px');
-    setRButton.style('background-color', '#333');
-    setRButton.mousePressed(() => {
-        let newVal = parseInt(inputN.value());
-        if (!isNaN(newVal) && newVal > 0) {
-            N = newVal;
-            // Clear existing particles & trails
-            spps = [];
-            trails = [];
-            spawnSPPs();
-
-            ap = new AttractivePoint(
-                windowWidth / 2,
-                windowHeight / 2,
-                initialKF,
-                initialRadius
-            );
-        }
-    });
+    setRButton.position(470, 60)
+        .style('color', 'white')
+        .style('width', '100px')
+        .style('height', '30px')
+        .style('padding', '4px 8px')
+        .style('background-color', '#333')
+        .mousePressed(() => {
+            let newVal = parseInt(inputN.value());
+            if (!isNaN(newVal) && newVal > 0) {
+                N = newVal;
+                spps = [];
+                trails = [];
+                spawnSPPs();
+                ap = new AttractivePoint(
+                    windowWidth / 2,
+                    windowHeight / 2,
+                    initialKF,
+                    initialRadius
+                );
+            }
+        });
 }
 
-
-// Draw the trail for particle i (if enabled)
+/**
+ * Draws a fading trail behind each particle.
+ * @param {boolean} showTrails – Whether to draw trails
+ * @param {Array[]} trails     – Array of position history arrays
+ * @param {number} i           – Index of the particle
+ * @param {SelfPropelledParticle} particle – The particle being drawn
+ */
 function showParticleTrails(showTrails, trails, i, particle) {
     if (showTrails) {
         trails[i].push(particle.pos.copy());
+
         if (trails[i].length > trailLength) {
-            trails[i].shift();
+            trails[i].shift();  // remove oldest position
         }
+
         stroke(100, 200, 240, 150);
         strokeWeight(0.5);
+
         for (let j = 1; j < trails[i].length; j++) {
             let prevPos = trails[i][j - 1];
             let currPos = trails[i][j];
@@ -156,33 +145,37 @@ function showParticleTrails(showTrails, trails, i, particle) {
     }
 }
 
-
-// Spawn exactly N SPPs (with no SPP–SPP repulsion, since it's commented)
+/**
+ * Spawns exactly N self-propelled particles randomly in space.
+ * Avoids placing them too close to the Attractive Point.
+ */
 function spawnSPPs() {
-    let spawnBuffer = initialRadius * 2; // ensure spawn distance ≥ one diameter
+    const spawnBuffer = initialRadius * 2;
 
     for (let i = 0; i < N; i++) {
         let x, y, d;
         do {
-            x = random(width/4,0.75*width);
-            y = random(height/4,0.75*height);
-            d = dist(x, y, windowWidth/2, windowHeight/2);
-        } while (d < spawnBuffer);
+            x = random(width / 4, 0.75 * width);
+            y = random(height / 4, 0.75 * height);
+            d = dist(x, y, windowWidth / 2, windowHeight / 2);
+        } while (d < spawnBuffer);  // Avoid spawning too close to AP
 
-        let theta0 = Math.random(0, Math.TWO_PI);
+        let theta0 = random(TWO_PI);
+
         spps.push(
             new SelfPropelledParticle(
                 x,
                 y,
-                initialKFSPP,
-                initialSpeed,    // overwritten each frame in draw()
-                initialRadius, // overwritten each frame in draw()
+                initialKFSPP,     // strength (SPP–SPP)
+                initialSpeed,     // speed (will be overwritten in draw loop)
+                initialRadius,    // radius (will be overwritten in draw loop)
                 theta0,
-                mobility,        // constant, no slider
-                epsilon,         // constant=2, no slider
-                timeStep
+                mobility,         // constant
+                epsilon,          // constant
+                timeStep          // constant
             )
         );
-        trails.push([]);   // initialize an empty trail array
+
+        trails.push([]);  // Initialize empty trail buffer
     }
 }
