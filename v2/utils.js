@@ -19,7 +19,7 @@ function createToolbar() {
     labelKF.style('padding', '4px 8px');
     sliderKF = createSlider(0.01, 1.5, initialKF, 0.01);
     sliderKF.style('padding', '4px 8px');
-    sliderKF.position(100, 25);
+    sliderKF.position(110, 25);
     sliderKF.style('width', '100px');
 
     labelKF_SPP = createDiv('K_F (SPP-SPP) = 0.10');
@@ -28,7 +28,7 @@ function createToolbar() {
     labelKF_SPP.style('padding', '4px 8px');
     sliderKF_SPP = createSlider(0.01, 1.5, initialKFSPP, 0.01);
     sliderKF_SPP.style('padding', '4px 8px');
-    sliderKF_SPP.position(100, 45);
+    sliderKF_SPP.position(110, 45);
     sliderKF_SPP.style('width', '100px');
 
 
@@ -40,7 +40,7 @@ function createToolbar() {
     labelSpeed.style('color', 'white');
     labelSpeed.style('padding', '4px 8px');
     sliderSpeed = createSlider(0.1, 2, initialSpeed * timeStep, 0.1);
-    sliderSpeed.position(100, 65);
+    sliderSpeed.position(110, 65);
     sliderSpeed.style('width', '100px');
     sliderSpeed.style('padding', '4px 8px');
 
@@ -50,7 +50,7 @@ function createToolbar() {
     labelRadius.style('color', 'white');
     labelRadius.style('padding', '4px 8px');
     sliderRadius = createSlider(1, 10, initialRadius, 0.1);
-    sliderRadius.position(100, 85);
+    sliderRadius.position(110, 85);
     sliderRadius.style('width', '100px');
     sliderRadius.style('padding', '4px 8px');
 
@@ -87,19 +87,39 @@ function createToolbar() {
 
     // ---- (f) Input + “Set N” for changing particle count ----
     inputN = createInput(String(N), 'number');
-    inputN.position(400, 45);
+    inputN.position(400, 30);
     inputN.style('width', '50px');
     inputN.style('height', '20px');
     inputN.style('padding', '2px 8px');
     inputN.attribute('min', '1');
 
     setNButton = createButton('Set count');
-    setNButton.position(470, 45);
+    setNButton.position(470, 30);
     setNButton.style('color', 'white');
     setNButton.style('padding', '4px 8px');
     setNButton.style('height', '30px');
+    setNButton.style('width', '100px');
     setNButton.style('background-color', '#333');
     setNButton.mousePressed(() => {
+        let newVal = parseInt(inputN.value());
+        if (!isNaN(newVal) && newVal > 0) {
+            N = newVal;
+            // Clear existing particles & trails
+            spps = [];
+            trails = [];
+            spawnSPPs();
+        }
+    });
+
+
+    setRButton = createButton('Reset');
+    setRButton.position(470, 60);
+    setRButton.style('color', 'white');
+    setRButton.style('padding', '4px 8px');
+    setRButton.style('height', '30px');
+    setRButton.style('width', '100px');
+    setRButton.style('background-color', '#333');
+    setRButton.mousePressed(() => {
         let newVal = parseInt(inputN.value());
         if (!isNaN(newVal) && newVal > 0) {
             N = newVal;

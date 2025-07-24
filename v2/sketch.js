@@ -55,8 +55,8 @@ function draw() {
     let newSpeed = sliderSpeed.value() / timeStep;  // slider holds speed·dt
     let newRadius = sliderRadius.value();
 
-    labelKF.html(`K_F = ${newKF.toFixed(2)}`);
-    labelKF_SPP.html(`K_F_SPP = ${newKfSPP.toFixed(2)}`);
+    labelKF.html(`Kf = ${newKF.toFixed(2)}`);
+    labelKF_SPP.html(`KfSPP = ${newKfSPP.toFixed(2)}`);
     labelSpeed.html(`Speed = ${(newSpeed * timeStep).toFixed(1)}`);
     labelRadius.html(`Radius = ${newRadius}`);
 

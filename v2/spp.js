@@ -86,7 +86,7 @@ class SelfPropelledParticle {
 
         // If noise is enabled, add rotational noise √g·Z_i:
         if (useNoise) {
-            let dthetaNoise = Math.sqrt(this.noiseG) * Math.randomGaussian();
+            let dthetaNoise = Math.sqrt(this.noiseG) * randomGaussian();
             dtheta += dthetaNoise;
         }
 
