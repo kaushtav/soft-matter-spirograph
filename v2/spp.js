@@ -11,20 +11,9 @@ class SelfPropelledParticle {
      * @param {number} epsilon   – repulsion strength (ε)
      * @param {number} timeStep  – time step Δt (we keep it at 0.1)
      */
-    constructor(
-        x,
-        y,
-        speed,
-        strength,
-        radius,
-        theta,
-        mobility,
-        epsilon,
-        timeStep
-    ) {
+    constructor(x, y, speed, radius, theta, mobility, epsilon, timeStep) {
         this.pos = createVector(x, y);
         this.speed = speed;
-        this.strength = strength;
         this.r = radius;        // helps define s = 2r in repulsion
         this.theta = theta;
         this.mobility = mobility;
@@ -80,8 +69,6 @@ class SelfPropelledParticle {
 
         // Deterministic alignment term: dθ_det = K_F · sin(φ − θ)
         let dtheta = ap.strength * sin(phi - this.theta);
-        let dthetaSPP = kfSPP * sin(phi_ij - this.theta);
-
 
         // If noise is enabled, add rotational noise √g·Z_i:
         if (useNoise) {
