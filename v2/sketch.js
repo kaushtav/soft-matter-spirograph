@@ -8,11 +8,11 @@ let zoomFactor = 3.0;
 let origin;
 
 // Number of particles
-let N = 10;
+let N = 3;
 
 // Initial (default) parameter values
-let initialKF = 0.75;
-let initialKFSPP = 0.1;
+let initialKF = 0.5;
+let initialKFSPP = 0.5;
 let initialSpeed = 7;
 let timeStep = 0.1;    // Δt = 0.1 (paper uses 0.001, but we keep 0.1 per your request)
 let initialRadius = 4;

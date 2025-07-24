@@ -12,7 +12,7 @@ class SelfPropelledParticle {
      * @param {number} epsilon   – repulsion strength (ε)
      * @param {number} timeStep  – time step Δt (we keep it at 0.1)
      */
-    constructor(x, y, speed,strength, radius, theta, mobility, epsilon, timeStep) {
+    constructor(x, y,speed,strength, radius, theta, mobility, epsilon, timeStep) {
         this.pos = createVector(x, y);
         this.speed = speed;
         this.r = radius;

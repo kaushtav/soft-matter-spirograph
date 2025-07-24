@@ -159,7 +159,7 @@ function spawnSPPs() {
         do {
             x = random(width/4,0.75*width);
             y = random(height/4,0.75*height);
-            d = dist(x, y, ap.pos.x, ap.pos.y);
+            d = dist(x, y, windowWidth/2, windowHeight/2);
         } while (d < spawnBuffer);
 
         let theta0 = Math.random(0, Math.TWO_PI);
