@@ -56,7 +56,7 @@ class SelfPropelledParticle {
 
 
         // --- 1b) Excluded-volume repulsion SPP ↔ AP ---
-        let rap = p5.Vector.sub(this.pos, origin);
+        let rap = p5.Vector.sub(this.pos, ap.pos);
         let dap = rap.mag();
         if (dap > 0  && dap < this.cutoff * this.r * 2) {
             let s12 = Math.pow(diameter, 12);
@@ -67,7 +67,7 @@ class SelfPropelledParticle {
         }
 
         // 2) Orientation update: “align to AP” + optional rotational noise
-        let rawVec = p5.Vector.sub(origin, this.pos);
+        let rawVec = p5.Vector.sub(ap.pos, this.pos);
         let phi = rawVec.heading();           // bearing from SPP → AP
 
         // Deterministic alignment term: dθ_det = K_F · sin(φ − θ)

@@ -127,6 +127,13 @@ function createToolbar() {
             spps = [];
             trails = [];
             spawnSPPs();
+
+            ap = new AttractivePoint(
+                windowWidth / 2,
+                windowHeight / 2,
+                initialKF,
+                initialRadius
+            );
         }
     });
 }

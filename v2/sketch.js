@@ -89,6 +89,8 @@ function draw() {
         p.show();
     }
 
+    ap.applyForcesFrom(spps, epsilon, ap.cutoff ?? 3, timeStep);
+
     pop();
 
     // Note: Sliders, input box, and toggle buttons are not scaled.
