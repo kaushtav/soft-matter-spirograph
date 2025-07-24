@@ -1,5 +1,4 @@
 /// <reference path="./node_modules/@types/p5/global.d.ts" />
-
 let ap;
 let spps = [];
 let trails = [];
@@ -8,10 +7,11 @@ let windowWidth = 1200,
 let zoomFactor = 3.0;
 
 // Number of particles
-let N = 6;
+let N = 10;
 
 // Initial (default) parameter values
 let initialKF = 0.75;
+let initialKFSPP = 0.1;
 let initialSpeed = 7;
 let timeStep = 0.1;    // Δt = 0.1 (paper uses 0.001, but we keep 0.1 per your request)
 let initialRadius = 4;
@@ -49,10 +49,12 @@ function draw() {
 
     // --- Read slider values & update labels + AP parameters ---
     let newKF = sliderKF.value();
+    let newKfSPP = sliderKF_SPP.value();
     let newSpeed = sliderSpeed.value() / timeStep;  // slider holds speed·dt
     let newRadius = sliderRadius.value();
 
     labelKF.html(`K_F = ${newKF.toFixed(2)}`);
+    labelKF_SPP.html(`K_F = ${newKfSPP.toFixed(2)}`);
     labelSpeed.html(`Speed = ${(newSpeed * timeStep).toFixed(1)}`);
     labelRadius.html(`Radius = ${newRadius}`);
 
@@ -71,6 +73,7 @@ function draw() {
     // Update & draw each SPP
     for (let i = 0; i < N; i++) {
         let p = spps[i];
+        p.strength = newKfSPP;
 
         // Overwrite each SPP’s per‐frame parameters:
         p.speed = newSpeed;

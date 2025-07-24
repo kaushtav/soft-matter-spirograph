@@ -5,12 +5,43 @@
     <meta name="viewport" content="width=device-width" />
     <title>Soft Matter Spirograph</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
-    <script src="./attractivePoint.js"></script>
-    <script src="./spp.js"></script>
-    <script src="./utils.js"></script>
+
+    <script>
+        function getVersionFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('version') === 'v2' ? 'v2' : 'v1';
+        }
+
+        const version = getVersionFromURL();
+
+        // Dynamically load scripts from the correct version folder
+        const scripts = ['attractivePoint.js', 'spp.js', 'utils.js', 'sketch.js'];
+        for (const script of scripts) {
+            document.write(`<script src="./${version}/${script}"><\/script>`);
+        }
+    </script>
 </head>
 <body>
-<!-- 4) Main sketch -->
-<script src="./sketch.js"></script>
+<script>
+    // Add toggle button to switch version
+    window.onload = () => {
+        const btn = document.createElement('button');
+        btn.textContent = location.search.includes('version=v2') ? 'Switch to v1' : 'Switch to v2';
+        btn.style.position = 'absolute';
+        btn.style.top = '10px';
+        btn.style.right = '10px';
+        btn.style.padding = '8px 12px';
+        btn.style.background = '#333';
+        btn.style.color = 'white';
+        btn.style.border = 'none';
+        btn.style.cursor = 'pointer';
+        btn.onclick = () => {
+            const targetVersion = location.search.includes('version=v2') ? 'v1' : 'v2';
+            const baseUrl = location.origin + location.pathname;
+            window.location.href = `${baseUrl}?version=${targetVersion}`;
+        };
+        document.body.appendChild(btn);
+    };
+</script>
 </body>
 </html>

@@ -1,9 +1,11 @@
 let sliderKF,
     sliderSpeed,
-    sliderRadius;
+    sliderRadius,
+    sliderKF_SPP;
 let labelKF,
     labelSpeed,
-    labelRadius;
+    labelRadius,
+    labelKF_SPP;
 let toggleTrailsButton,
     toggleNoiseButton,
     inputN,
@@ -19,6 +21,23 @@ function createToolbar() {
     sliderKF.style('padding', '4px 8px');
     sliderKF.position(100, 25);
     sliderKF.style('width', '100px');
+
+    labelKF_SPP = createDiv('K_F (SPP-SPP) = 0.10');
+    labelKF_SPP.position(10, 85);
+    labelKF_SPP.style('color', 'white');
+    labelKF_SPP.style('padding', '4px 8px');
+
+    sliderKF_SPP = createSlider(0.01, 1.5, initialKFSPP, 0.01);
+    sliderKF_SPP.style('padding', '4px 8px');
+    sliderKF_SPP.position(150, 85);
+    sliderKF_SPP.style('width', '100px');
+
+
+    labelKF_SPP.html(`K_F (SPP-SPP) = ${initialKFSPP.toFixed(2)}`);
+    labelKF_SPP.position(200, 85);
+    labelKF_SPP.style('color', 'white');
+    labelKF_SPP.style('padding', '4px 8px');
+
 
     // ---- (b) Speed slider + label ----
     labelSpeed = createDiv('Speed = 1.0');
@@ -128,7 +147,7 @@ function spawnSPPs() {
             d = dist(x, y, ap.pos.x, ap.pos.y);
         } while (d < spawnBuffer);
 
-        let theta0 = random(0, TWO_PI);
+        let theta0 = Math.random(0, Math.TWO_PI);
         spps.push(
             new SelfPropelledParticle(
                 x,
