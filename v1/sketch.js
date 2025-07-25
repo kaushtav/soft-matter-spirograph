@@ -1,5 +1,5 @@
 /// <reference path="./node_modules/@types/p5/global.d.ts" />
-
+let currentVersion = 'v1';
 let ap;
 let spps = [];
 let trails = [];

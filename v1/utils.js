@@ -128,7 +128,7 @@ function spawnSPPs() {
             d = dist(x, y, ap.pos.x, ap.pos.y);
         } while (d < spawnBuffer);
 
-        let theta0 = random(0, TWO_PI);
+        let theta0 = Math.random(0, Math.TWO_PI);
         spps.push(
             new SelfPropelledParticle(
                 x,
