@@ -3,50 +3,30 @@
 // ----------------------------------------
 // Global Variables & Simulation Constants
 // ----------------------------------------
-let ap;                         // Attractive Point
+let ap;
+let aps = [];// Attractive Point
 let spps = [];                  // Self-propelled particles
 let trails = [];                // Particle trails
 
 let windowWidth = 1200;
 let windowHeight = 800;
-let zoomFactor = 3.0;
+let zoomFactor = 1.5;
 
 // Particle configuration
-let N = 1;                      // Number of SPPs
-let initialKF = 0.5;            // Attraction strength of AP
-let initialKFSPP = 0.5;         // Attraction strength towards AP per SPP
-let initialSpeed = 4;
+let N = 4;                      // Number of SPPs
+let M = 0;                      // Number of APPs
+let initialKF = 0.3;            // Attraction strength of AP
+let initialKFSPP = 0.05;         // Attraction strength towards AP per SPP
+let initialSpeed = 10;
 let timeStep = 0.1;             // Simulation timestep
-let initialRadius = 4;
+let initialRadius = 10;
 let mobility = 0.25;            // Mobility coefficient (fixed)
-let epsilon = 1;                // Repulsion coefficient (fixed)
+let epsilon = 0.5;                // Repulsion coefficient (fixed)
 let trailLength = Math.max(100, 5000 / N); // Trail buffer size
 
 // UI flags
 let showTrails = true;
 let useNoise = false;
-
-// ----------------------------------------
-// Utility: Log total momentum of system
-// ----------------------------------------
-function logTotalMomentum() {
-    let totalMomentum = createVector(0, 0);
-
-    for (let p of spps) {
-        let vel = createVector(
-            p.speed * Math.cos(p.theta),
-            p.speed * Math.sin(p.theta)
-        );
-        totalMomentum.add(vel);
-    }
-
-    if (ap.vel) {
-        totalMomentum.add(ap.vel.copy());
-    }
-
-    console.log("Total linear momentum (magnitude):", totalMomentum.mag().toFixed(4));
-    // console.log("Vector:", totalMomentum);
-}
 
 // ----------------------------------------
 // p5.js Setup
@@ -61,6 +41,14 @@ function setup() {
         initialKF,
         initialRadius
     );
+    for (let i=0;i<M;i++){
+        aps[i] = new AttractivePoint(
+            random(width / 4, 0.75 * width),
+            random(height / 4, 0.75 * height),
+            initialKF,
+            initialRadius
+        );
+    }
 
     createToolbar();   // Load sliders & buttons from utils.js
     spawnSPPs();       // Generate initial SPPs
@@ -110,7 +98,6 @@ function draw() {
     // Step 3: SPP–SPP Repulsion (Symmetric Newton's Third Law)
     for (let i = 0; i < N; i++) {
         for (let j = i + 1; j < N; j++) {
-            if (i === j) continue;
             let pi = spps[i];
             let pj = spps[j];
             let rij = p5.Vector.sub(pi.pos, pj.pos);
@@ -159,6 +146,9 @@ function draw() {
         showParticleTrails(showTrails, trails, i, p);
         noStroke();
         p.show();
+    }
+    for (let ap1 of aps){
+        ap1.show();
     }
 
     pop();

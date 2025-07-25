@@ -18,13 +18,13 @@ function createToolbar() {
     // ---- (a) Slider: K_F (Attractive Point) ----
     labelKF = createDiv('K_F = 0.10');
     labelKF.position(10, 25).style('color', 'white').style('padding', '4px 8px');
-    sliderKF = createSlider(0.01, 1.5, initialKF, 0.01);
+    sliderKF = createSlider(0, 1.0, initialKF, 0.01);
     sliderKF.position(110, 25).style('width', '100px').style('padding', '4px 8px');
 
     // ---- (b) Slider: K_F (SPP–SPP coupling) ----
     labelKF_SPP = createDiv('K_F (SPP-SPP) = 0.10');
     labelKF_SPP.position(10, 45).style('color', 'white').style('padding', '4px 8px');
-    sliderKF_SPP = createSlider(0.01, 1.5, initialKFSPP, 0.01);
+    sliderKF_SPP = createSlider(0, 0.5, initialKFSPP, 0.01);
     sliderKF_SPP.position(110, 45).style('width', '100px').style('padding', '4px 8px');
 
     // ---- (c) Slider: Speed ----
@@ -77,10 +77,10 @@ function createToolbar() {
         .attribute('min', '1');
 
     // ---- (h) Button: Apply N ----
-    setNButton = createButton('Set count');
+    setNButton = createButton('Set SPP count');
     setNButton.position(470, 30)
         .style('color', 'white')
-        .style('width', '100px')
+        .style('width', '120px')
         .style('height', '30px')
         .style('padding', '4px 8px')
         .style('background-color', '#333')
@@ -94,12 +94,38 @@ function createToolbar() {
             }
         });
 
+    // ---- (g) Input: Set Number of SPPs ----
+    inputM = createInput(String(M), 'number');
+    inputM.position(400, 60)
+        .style('width', '50px')
+        .style('height', '20px')
+        .style('padding', '2px 8px')
+        .attribute('min', '1');
+
+    // ---- (h) Button: Apply N ----
+    setMButton = createButton('Set AP count');
+    setMButton.position(470, 60)
+        .style('color', 'white')
+        .style('width', '120px')
+        .style('height', '30px')
+        .style('padding', '4px 8px')
+        .style('background-color', '#333')
+        .mousePressed(() => {
+            let newVal = parseInt(inputM.value());
+            if (!isNaN(newVal) && newVal > 0) {
+                M = newVal;
+                spps = [];
+                trails = [];
+                spawnSPPs();
+            }
+        });
+
     // ---- (i) Button: Reset Simulation ----
-    setRButton = createButton('Reset');
-    setRButton.position(470, 60)
+    setRButton = createButton('Reset Simulation');
+    setRButton.position(600, 30)
         .style('color', 'white')
         .style('width', '100px')
-        .style('height', '30px')
+        .style('height', '60px')
         .style('padding', '4px 8px')
         .style('background-color', '#333')
         .mousePressed(() => {

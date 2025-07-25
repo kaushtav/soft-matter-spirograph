@@ -14,7 +14,7 @@ class AttractivePoint {
         this.strength = strength;                 // Attraction strength
         this.r = radius;                          // Radius for drawing
         this.vel = createVector(0, 0);            // Velocity vector
-        this.mass = 10000;                        // Mass (affects response to forces)
+        this.mass = 1000;                        // Mass (affects response to forces)
         this.totalForce = createVector(0, 0);     // Net force accumulator
     }
 
@@ -31,9 +31,6 @@ class AttractivePoint {
         // Keep the AP within canvas bounds
         this.pos.x = constrain(this.pos.x, 0, width);
         this.pos.y = constrain(this.pos.y, 0, height);
-
-        // Debug logging (optional)
-        console.log(acc.x, this.vel.x, this.pos.x);
     }
 
     /**
